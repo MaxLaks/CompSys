@@ -1,0 +1,137 @@
+Registers:
+x5: f
+x6: g
+x7: h
+x28: i
+x29: j
+x10: A
+x11: B
+
+2.1
+f = g + (h - 5) :
+addi x7 x7 -5
+add x5 x6 x7
+
+2.2
+add f, g, h
+add f, i, f :
+f = g + h + i
+
+2.3
+sub x5 x28 x29
+add x5 x5 x10
+lw x5 0(x5)
+sw x5 8(x11)
+
+2.4
+slli  x30, x5,  2   # x30 = f * 4
+add   x30, x10, x30 # x30 = &A[f]
+slli  x31, x6,  2   # x31 = g * 4
+add   x31, x11, x31 # x31 = &B[g]
+lw    x5, 0(x30)    # f = A[f]
+
+addi x12, x30, 4
+lw   x30, 0(x12)
+add  x30, x30, x5
+sw   x30, 0(x31) :
+
+B[g] = A[f + 1] + A[f]
+
+2.5
+0xABCDEF12 :
+
+Little-endian:
+0x0000 = 0001 0010
+0x0001 = 1110 1111
+0x0002 = 1100 1101
+0x0003 = 1010 1011
+
+Big-endian:
+0x0000 = 1010 1011
+0x0001 = 1100 1101
+0x0002 = 1110 1111
+0x0003 = 0001 0010
+
+2.24
+LOOP: 
+    beq x6, x0, DONE
+    addi x6, x6, -1
+    addi x5, x5, 2
+    jal x0, LOOP
+DONE:
+
+2.24.1
+20
+
+2.24.2
+acc = 0
+i = 10
+while (i != 0) {
+    i--
+    acc+=2
+}
+
+2.24.3
+4n + 1
+
+2.24.4
+LOOP: 
+    blt x6, x0, DONE
+    addi x6, x6, -1
+    addi x5, x5, 2
+    jal x0, LOOP
+DONE:
+
+acc = 0
+i = 10
+while (i >= 0) {
+    i--
+    acc+=2
+}
+
+2.25
+for(i=0; i<a; i++)
+  for(j=0; j<b; j++)
+    D[4*j] = i + j;
+
+x5: a
+x6: b
+x7: i
+x29: j
+x10: D (Base address)
+
+add x7, x0, x0
+LOOP1:
+    bge x7, x5, DONE1
+
+    add x29, x0, x0
+    LOOP2:
+        bge x29, x6, DONE1
+
+        add x8, x7, x29
+        slli x9, x29, 2
+        add x9, x9, x10
+        sw x8, x0(x9)
+
+        addi x29, x29, 1
+        jal x0, LOOP2
+    DONE2:
+
+    addi x7, x7, 1
+    jal x0, LOOP1
+DONE1:
+
+
+addi x5, x5, -1
+add x29, x0, x0
+LOOP2:
+    bge x29, x6, DONE1
+    addi x29, x29, 1
+
+    add x8, x5, x29
+    slli x9, x29, 2
+    add x9, x9, x10
+    sw x8, x0(x9)
+
+    jal x0, LOOP2
+DONE2:
